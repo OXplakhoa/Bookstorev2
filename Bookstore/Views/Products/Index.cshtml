@@ -1,0 +1,23 @@
+﻿@model IEnumerable<Bookstore.Models.Products>
+
+@{
+    ViewBag.Title = "Products";
+}
+
+<h2>Products</h2>
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">@item.Title</h5>
+                    <p class="card-text">By @item.Author</p>
+                    <p class="card-text"><strong>@item.Price.ToString("N0") VND</strong></p>
+                    @Html.ActionLink("View Details", "Details", new { id = item.ProductId }, new { @class = "btn btn-primary" })
+                </div>
+            </div>
+        </div>
+    }
+</div>
