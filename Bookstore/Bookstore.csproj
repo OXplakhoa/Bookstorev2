@@ -286,6 +286,7 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
+    <None Include="Db\Bookstoredb.sql" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -341,6 +342,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Db\ConcurrencyControl\" />
+    <Folder Include="Db\DbBackUp\" />
+    <Folder Include="Db\Functions\" />
+    <Folder Include="Db\StoreProcedures\" />
+    <Folder Include="Db\Triggers\" />
+    <Folder Include="Db\UserRoleManagement\" />
     <Folder Include="Views\NewFolder1\" />
   </ItemGroup>
   <ItemGroup>
