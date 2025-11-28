@@ -8,6 +8,14 @@
 
 CREATE TABLE AspNetUsers (
     Id NVARCHAR(450) PRIMARY KEY,
+    FullName NVARCHAR(100),
+    DateOfBirth DATETIME2,
+    Address NVARCHAR(500),
+    ProfilePictureUrl NVARCHAR(500),
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    UpdatedAt DATETIME2 NULL,
+    IsActive BIT NOT NULL DEFAULT 1,
+    IsDeleted BIT NOT NULL DEFAULT 0, 
     UserName NVARCHAR(256),
     NormalizedUserName NVARCHAR(256),
     Email NVARCHAR(256),
@@ -21,11 +29,7 @@ CREATE TABLE AspNetUsers (
     TwoFactorEnabled BIT NOT NULL,
     LockoutEnd DATETIMEOFFSET,
     LockoutEnabled BIT NOT NULL,
-    AccessFailedCount INT NOT NULL,
-    FullName NVARCHAR(100),
-    DateOfBirth DATETIME2,
-    Address NVARCHAR(500),
-    ProfilePictureUrl NVARCHAR(500)
+    AccessFailedCount INT NOT NULL
 );
 
 CREATE TABLE AspNetRoles (
