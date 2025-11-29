@@ -1,0 +1,313 @@
+﻿@model Bookstore.Models.Products
+@{
+    ViewBag.Title = Model.Title;
+    var mainImage = Model.ProductImages?.FirstOrDefault(pi => pi.IsMain)?.ImageUrl ?? "/Content/images/no-image.png";
+    var otherImages = Model.ProductImages?.Where(pi => !pi.IsMain).ToList() ?? new List<Bookstore.Models.ProductImages>();
+}
+
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">@Html.ActionLink("Trang chủ", "Index", "Home")</li>
+            <li class="breadcrumb-item">@Html.ActionLink("Sản phẩm", "Index", "Products")</li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Product Images -->
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow-sm">
+                <img src="@mainImage" class="card-img-top" id="mainProductImage" alt="@Model.Title" 
+                     style="height: 400px; object-fit: contain; background-color: #f8f9fa;">
+                @if (otherImages.Any())
+                {
+                    <div class="card-body">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <img src="@mainImage" class="img-thumbnail product-thumb active" 
+                                 style="width: 60px; height: 75px; object-fit: cover; cursor: pointer;">
+                            @foreach (var img in otherImages)
+                            {
+                                <img src="@img.ImageUrl" class="img-thumbnail product-thumb" 
+                                     style="width: 60px; height: 75px; object-fit: cover; cursor: pointer;">
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <span class="badge bg-secondary mb-2">@(Model.Categories != null ? Model.Categories.Name : "Không có danh mục")</span>
+                    <h2 class="card-title">@Model.Title</h2>
+                    <p class="text-muted mb-3">
+                        <i class="bi bi-person"></i> Tác giả: <strong>@Model.Author</strong>
+                    </p>
+
+                    <!-- Price -->
+                    <div class="mb-4">
+                        <h3 class="text-primary">@Model.Price.ToString("N0")₫</h3>
+                    </div>
+
+                    <!-- Stock Status -->
+                    <div class="mb-4">
+                        @if (Model.Stock > 10)
+                        {
+                            <span class="badge bg-success fs-6"><i class="bi bi-check-circle"></i> Còn hàng</span>
+                        }
+                        else if (Model.Stock > 0)
+                        {
+                            <span class="badge bg-warning text-dark fs-6"><i class="bi bi-exclamation-triangle"></i> Chỉ còn @Model.Stock sản phẩm</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger fs-6"><i class="bi bi-x-circle"></i> Hết hàng</span>
+                        }
+                    </div>
+
+                    <!-- Add to Cart Form -->
+                    @if (Request.IsAuthenticated)
+                    {
+                        if (Model.Stock > 0)
+                        {
+                            using (Html.BeginForm("Add", "Cart", FormMethod.Post, new { id = "addToCartForm" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="ProductId" value="@Model.ProductId" />
+                                
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <label class="form-label mb-0 fw-semibold">Số lượng:</label>
+                                    <div class="input-group" style="max-width: 150px;">
+                                        <button type="button" class="btn btn-outline-secondary" id="btnDecrease">
+                                            <i class="bi bi-dash"></i>
+                                        </button>
+                                        <input type="number" name="Quantity" class="form-control text-center" 
+                                               value="1" min="1" max="@Model.Stock" id="quantityInput">
+                                        <button type="button" class="btn btn-outline-secondary" id="btnIncrease">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex">
+                                    <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                                        <i class="bi bi-cart-plus"></i> Thêm vào giỏ hàng
+                                    </button>
+                                    <a href="@Url.Action("Index", "Checkout")" class="btn btn-success btn-lg" id="btnBuyNow">
+                                        <i class="bi bi-lightning"></i> Mua ngay
+                                    </a>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="alert alert-secondary">
+                                <i class="bi bi-info-circle"></i> Sản phẩm hiện đang hết hàng. Vui lòng quay lại sau.
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Vui lòng 
+                            @Html.ActionLink("đăng nhập", "Login", "Account", new { returnUrl = Request.Url.PathAndQuery }, null) 
+                            để thêm sản phẩm vào giỏ hàng.
+                        </div>
+                    }
+
+                    <hr class="my-4">
+
+                    <!-- Product Description -->
+                    <div>
+                        <h5><i class="bi bi-info-circle"></i> Mô tả sản phẩm</h5>
+                        <p class="text-muted">@(string.IsNullOrEmpty(Model.Description) ? "Chưa có mô tả cho sản phẩm này." : Model.Description)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-star"></i> Đánh giá sản phẩm</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Reviews != null && Model.Reviews.Any())
+                    {
+                        <div class="mb-3">
+                            @{
+                                var avgRating = Model.Reviews.Average(r => r.Rating);
+                                var reviewCount = Model.Reviews.Count;
+                            }
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fs-3 fw-bold">@avgRating.ToString("F1")</span>
+                                <div>
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= Math.Round(avgRating))
+                                        {
+                                            <i class="bi bi-star-fill text-warning"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-star text-warning"></i>
+                                        }
+                                    }
+                                    <br>
+                                    <small class="text-muted">@reviewCount đánh giá</small>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        foreach (var review in Model.Reviews.OrderByDescending(r => r.CreatedAt).Take(5))
+                        {
+                            <div class="mb-3 pb-3 border-bottom">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>Khách hàng</strong>
+                                        <div>
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                if (i <= review.Rating)
+                                                {
+                                                    <i class="bi bi-star-fill text-warning small"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-star text-warning small"></i>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">@review.CreatedAt.ToString("dd/MM/yyyy")</small>
+                                </div>
+                                <p class="mt-2 mb-0">@review.Comment</p>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center py-4">
+                            <i class="bi bi-chat-dots display-4"></i><br>
+                            Chưa có đánh giá nào cho sản phẩm này.
+                        </p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-4">
+        @Html.ActionLink("← Quay lại danh sách sản phẩm", "Index", null, new { @class = "btn btn-outline-secondary" })
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            var maxStock = @Model.Stock;
+            var $qtyInput = $('#quantityInput');
+
+            // Thumbnail click handler
+            $('.product-thumb').click(function () {
+                var newSrc = $(this).attr('src');
+                $('#mainProductImage').attr('src', newSrc);
+                $('.product-thumb').removeClass('active border-primary');
+                $(this).addClass('active border-primary');
+            });
+
+            // Quantity controls
+            $('#btnDecrease').click(function () {
+                var current = parseInt($qtyInput.val()) || 1;
+                if (current > 1) {
+                    $qtyInput.val(current - 1);
+                }
+            });
+
+            $('#btnIncrease').click(function () {
+                var current = parseInt($qtyInput.val()) || 1;
+                if (current < maxStock) {
+                    $qtyInput.val(current + 1);
+                }
+            });
+
+            // Validate input on change
+            $qtyInput.on('change', function () {
+                var val = parseInt($(this).val()) || 1;
+                if (val < 1) val = 1;
+                if (val > maxStock) val = maxStock;
+                $(this).val(val);
+            });
+
+            // Add to cart AJAX
+            $('#addToCartForm').submit(function (e) {
+                e.preventDefault();
+                var $form = $(this);
+                var $btn = $form.find('button[type="submit"]');
+                var originalHtml = $btn.html();
+                
+                $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Đang thêm...');
+                
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: $form.serialize(),
+                    success: function (response) {
+                        if (response.Success) {
+                            showToast(response.Message, 'success');
+                            // Update cart count in navbar
+                            updateCartBadge(response.CartCount);
+                        } else {
+                            showToast(response.Message, 'danger');
+                        }
+                    },
+                    error: function () {
+                        showToast('Có lỗi xảy ra. Vui lòng thử lại.', 'danger');
+                    },
+                    complete: function () {
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }
+                });
+            });
+
+            function showToast(message, type) {
+                var toastHtml = '<div class="toast align-items-center text-white bg-' + type + ' border-0 position-fixed bottom-0 end-0 m-3" role="alert">' +
+                    '<div class="d-flex">' +
+                    '<div class="toast-body">' + message + '</div>' +
+                    '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>' +
+                    '</div></div>';
+                var $toast = $(toastHtml).appendTo('body');
+                var toast = new bootstrap.Toast($toast[0], { delay: 3000 });
+                toast.show();
+                $toast.on('hidden.bs.toast', function () { $(this).remove(); });
+            }
+
+            function updateCartBadge(count) {
+                // Reload the page to update mini cart (simple approach)
+                // Or implement AJAX refresh of mini cart partial
+                var $cartLink = $('a[href*="Cart"]').first();
+                if ($cartLink.find('.badge').length === 0 && count > 0) {
+                    $cartLink.addClass('position-relative');
+                    $cartLink.append('<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">' + count + '</span>');
+                } else if (count > 0) {
+                    $cartLink.find('.badge').text(count);
+                }
+            }
+        });
+    </script>
+}
+
+<style>
+    .product-thumb.active {
+        border-color: var(--bs-primary) !important;
+        border-width: 2px;
+    }
+</style>

@@ -1,0 +1,322 @@
+﻿@model Bookstore.ViewModels.CartViewModel
+@{
+    ViewBag.Title = "Giỏ hàng";
+}
+
+<div class="container py-4">
+    <h2 class="mb-4"><i class="bi bi-cart3"></i> Giỏ hàng của bạn</h2>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (Model.IsEmpty)
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-cart-x display-1 text-muted"></i>
+            <h4 class="mt-3">Giỏ hàng trống</h4>
+            <p class="text-muted">Bạn chưa có sản phẩm nào trong giỏ hàng.</p>
+            @Html.ActionLink("Tiếp tục mua sắm", "Index", "Products", null, new { @class = "btn btn-primary mt-2" })
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <!-- Cart Items -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <span><strong>@Model.TotalQuantity</strong> sản phẩm trong giỏ hàng</span>
+                        <button type="button" class="btn btn-outline-danger btn-sm" id="btnClearCart">
+                            <i class="bi bi-trash"></i> Xóa tất cả
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="cartTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 100px;">Ảnh</th>
+                                        <th>Sản phẩm</th>
+                                        <th style="width: 120px;">Đơn giá</th>
+                                        <th style="width: 130px;">Số lượng</th>
+                                        <th style="width: 120px;">Thành tiền</th>
+                                        <th style="width: 50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr data-cart-item-id="@item.CartItemId">
+                                            <td>
+                                                <a href="@Url.Action("Details", "Products", new { id = item.ProductId })">
+                                                    <img src="@item.ImageUrl" alt="@item.ProductTitle" 
+                                                         class="img-thumbnail" style="width: 80px; height: 100px; object-fit: cover;">
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <a href="@Url.Action("Details", "Products", new { id = item.ProductId })" class="text-decoration-none text-dark">
+                                                    <h6 class="mb-1">@item.ProductTitle</h6>
+                                                </a>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-person"></i> @item.Author
+                                                </small>
+                                                <br>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-folder"></i> @item.CategoryName
+                                                </small>
+                                                @if (item.Stock < 10)
+                                                {
+                                                    <br>
+                                                    <small class="text-warning">
+                                                        <i class="bi bi-exclamation-triangle"></i> Chỉ còn @item.Stock sản phẩm
+                                                    </small>
+                                                }
+                                            </td>
+                                            <td class="fw-semibold">@string.Format("{0:N0}₫", item.UnitPrice)</td>
+                                            <td>
+                                                <div class="input-group input-group-sm quantity-control">
+                                                    <button type="button" class="btn btn-outline-secondary btn-decrease" 
+                                                            data-cart-item-id="@item.CartItemId">
+                                                        <i class="bi bi-dash"></i>
+                                                    </button>
+                                                    <input type="number" class="form-control text-center quantity-input" 
+                                                           value="@item.Quantity" min="1" max="@item.Stock"
+                                                           data-cart-item-id="@item.CartItemId"
+                                                           data-unit-price="@item.UnitPrice"
+                                                           style="max-width: 60px;">
+                                                    <button type="button" class="btn btn-outline-secondary btn-increase" 
+                                                            data-cart-item-id="@item.CartItemId" data-max="@item.Stock">
+                                                        <i class="bi bi-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td class="fw-bold text-primary item-subtotal">
+                                                @string.Format("{0:N0}₫", item.Subtotal)
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-outline-danger btn-sm btn-remove" 
+                                                        data-cart-item-id="@item.CartItemId" title="Xóa sản phẩm">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    @Html.ActionLink("← Tiếp tục mua sắm", "Index", "Products", null, new { @class = "btn btn-outline-secondary" })
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm" id="orderSummary">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-receipt"></i> Tóm tắt đơn hàng</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tạm tính:</span>
+                            <span id="subtotal">@string.Format("{0:N0}₫", Model.Subtotal)</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Phí vận chuyển:</span>
+                            <span id="shippingFee">
+                                @if (Model.ShippingFee == 0)
+                                {
+                                    <span class="text-success">Miễn phí</span>
+                                }
+                                else
+                                {
+                                    string.Format("{0:N0}₫", Model.ShippingFee);
+                                }
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Thuế VAT (10%):</span>
+                            <span id="tax">@string.Format("{0:N0}₫", Model.Tax)</span>
+                        </div>
+                        @if (Model.Subtotal < 500000)
+                        {
+                            <div class="alert alert-info py-2 small mt-2">
+                                <i class="bi bi-info-circle"></i>
+                                Mua thêm <strong>@string.Format("{0:N0}₫", 500000 - Model.Subtotal)</strong> để được miễn phí vận chuyển!
+                            </div>
+                        }
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Tổng thanh toán:</strong>
+                            <strong class="text-primary fs-5" id="total">@string.Format("{0:N0}₫", Model.Total)</strong>
+                        </div>
+                        @Html.ActionLink("Tiến hành thanh toán", "Index", "Checkout", null, new { @class = "btn btn-primary w-100 btn-lg" })
+                    </div>
+                </div>
+
+                <!-- Coupon Code (Future Feature) -->
+                <div class="card shadow-sm mt-3">
+                    <div class="card-body">
+                        <h6 class="mb-3"><i class="bi bi-ticket-perforated"></i> Mã giảm giá</h6>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Nhập mã giảm giá" disabled>
+                            <button class="btn btn-outline-secondary" type="button" disabled>Áp dụng</button>
+                        </div>
+                        <small class="text-muted">Tính năng sẽ ra mắt sớm!</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            var antiForgeryToken = $('input[name="__RequestVerificationToken"]').val();
+
+            // Decrease quantity
+            $(document).on('click', '.btn-decrease', function () {
+                var cartItemId = $(this).data('cart-item-id');
+                var input = $('input.quantity-input[data-cart-item-id="' + cartItemId + '"]');
+                var currentQty = parseInt(input.val());
+                if (currentQty > 1) {
+                    updateQuantity(cartItemId, currentQty - 1);
+                }
+            });
+
+            // Increase quantity
+            $(document).on('click', '.btn-increase', function () {
+                var cartItemId = $(this).data('cart-item-id');
+                var maxQty = parseInt($(this).data('max'));
+                var input = $('input.quantity-input[data-cart-item-id="' + cartItemId + '"]');
+                var currentQty = parseInt(input.val());
+                if (currentQty < maxQty) {
+                    updateQuantity(cartItemId, currentQty + 1);
+                } else {
+                    showToast('Số lượng đã đạt tối đa tồn kho!', 'warning');
+                }
+            });
+
+            // Direct input change
+            $(document).on('change', '.quantity-input', function () {
+                var cartItemId = $(this).data('cart-item-id');
+                var newQty = parseInt($(this).val());
+                var maxQty = parseInt($(this).attr('max'));
+                if (newQty < 1) newQty = 1;
+                if (newQty > maxQty) newQty = maxQty;
+                $(this).val(newQty);
+                updateQuantity(cartItemId, newQty);
+            });
+
+            // Update quantity via AJAX
+            function updateQuantity(cartItemId, newQuantity) {
+                $.ajax({
+                    url: '@Url.Action("Update", "Cart")',
+                    type: 'POST',
+                    data: {
+                        CartItemId: cartItemId,
+                        Quantity: newQuantity,
+                        __RequestVerificationToken: antiForgeryToken
+                    },
+                    success: function (response) {
+                        if (response.Success) {
+                            // Update input value
+                            $('input.quantity-input[data-cart-item-id="' + cartItemId + '"]').val(newQuantity);
+                            // Update item subtotal
+                            var row = $('tr[data-cart-item-id="' + cartItemId + '"]');
+                            row.find('.item-subtotal').text(response.Data.ItemSubtotalFormatted);
+                            // Refresh the page to update totals (simple approach)
+                            location.reload();
+                        } else {
+                            showToast(response.Message, 'danger');
+                        }
+                    },
+                    error: function () {
+                        showToast('Có lỗi xảy ra. Vui lòng thử lại.', 'danger');
+                    }
+                });
+            }
+
+            // Remove single item
+            $(document).on('click', '.btn-remove', function () {
+                var cartItemId = $(this).data('cart-item-id');
+                if (confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')) {
+                    $.ajax({
+                        url: '@Url.Action("Remove", "Cart")',
+                        type: 'POST',
+                        data: {
+                            cartItemId: cartItemId,
+                            __RequestVerificationToken: antiForgeryToken
+                        },
+                        success: function (response) {
+                            if (response.Success) {
+                                showToast(response.Message, 'success');
+                                location.reload();
+                            } else {
+                                showToast(response.Message, 'danger');
+                            }
+                        },
+                        error: function () {
+                            showToast('Có lỗi xảy ra. Vui lòng thử lại.', 'danger');
+                        }
+                    });
+                }
+            });
+
+            // Clear all cart
+            $('#btnClearCart').click(function () {
+                if (confirm('Bạn có chắc muốn xóa tất cả sản phẩm khỏi giỏ hàng?')) {
+                    $.ajax({
+                        url: '@Url.Action("Clear", "Cart")',
+                        type: 'POST',
+                        data: {
+                            __RequestVerificationToken: antiForgeryToken
+                        },
+                        success: function (response) {
+                            if (response.Success) {
+                                showToast(response.Message, 'success');
+                                location.reload();
+                            } else {
+                                showToast(response.Message, 'danger');
+                            }
+                        },
+                        error: function () {
+                            showToast('Có lỗi xảy ra. Vui lòng thử lại.', 'danger');
+                        }
+                    });
+                }
+            });
+
+            // Toast notification helper
+            function showToast(message, type) {
+                var toastHtml = '<div class="toast align-items-center text-white bg-' + type + ' border-0 position-fixed bottom-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true">' +
+                    '<div class="d-flex">' +
+                    '<div class="toast-body">' + message + '</div>' +
+                    '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>' +
+                    '</div></div>';
+                var $toast = $(toastHtml).appendTo('body');
+                var toast = new bootstrap.Toast($toast[0], { delay: 3000 });
+                toast.show();
+                $toast.on('hidden.bs.toast', function () {
+                    $(this).remove();
+                });
+            }
+        });
+    </script>
+}

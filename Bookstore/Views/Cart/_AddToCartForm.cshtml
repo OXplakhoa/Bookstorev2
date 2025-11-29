@@ -1,0 +1,116 @@
+@model Bookstore.ViewModels.AddToCartViewModel
+@{
+    var product = ViewBag.Product as Bookstore.Models.Products;
+}
+
+@using (Ajax.BeginForm("Add", "Cart", new AjaxOptions
+{
+    HttpMethod = "POST",
+    OnSuccess = "onAddToCartSuccess",
+    OnFailure = "onAddToCartError"
+}, new { @class = "add-to-cart-form" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.ProductId)
+    
+    <div class="d-flex align-items-center gap-3 mb-3">
+        <label class="form-label mb-0">Số lượng:</label>
+        <div class="input-group" style="max-width: 150px;">
+            <button type="button" class="btn btn-outline-secondary btn-qty-decrease">
+                <i class="bi bi-dash"></i>
+            </button>
+            @Html.TextBoxFor(m => m.Quantity, new { 
+                @class = "form-control text-center", 
+                type = "number", 
+                min = 1, 
+                max = product?.Stock ?? 100,
+                id = "addQty_" + Model.ProductId
+            })
+            <button type="button" class="btn btn-outline-secondary btn-qty-increase" data-max="@(product?.Stock ?? 100)">
+                <i class="bi bi-plus"></i>
+            </button>
+        </div>
+        @if (product != null && product.Stock < 10)
+        {
+            <small class="text-warning">
+                <i class="bi bi-exclamation-triangle"></i> Chỉ còn @product.Stock sản phẩm
+            </small>
+        }
+    </div>
+    
+    <button type="submit" class="btn btn-primary btn-lg w-100" @(product?.Stock > 0 ? "" : "disabled")>
+        <i class="bi bi-cart-plus"></i> 
+        @if (product?.Stock > 0)
+        {
+            <span>Thêm vào giỏ hàng</span>
+        }
+        else
+        {
+            <span>Hết hàng</span>
+        }
+    </button>
+}
+
+<script>
+    $(document).ready(function () {
+        var $form = $('.add-to-cart-form');
+        var $qtyInput = $form.find('input[name="Quantity"]');
+        
+        $form.find('.btn-qty-decrease').click(function () {
+            var current = parseInt($qtyInput.val()) || 1;
+            if (current > 1) {
+                $qtyInput.val(current - 1);
+            }
+        });
+        
+        $form.find('.btn-qty-increase').click(function () {
+            var maxQty = parseInt($(this).data('max')) || 100;
+            var current = parseInt($qtyInput.val()) || 1;
+            if (current < maxQty) {
+                $qtyInput.val(current + 1);
+            }
+        });
+    });
+    
+    function onAddToCartSuccess(response) {
+        if (response.Success) {
+            // Show success toast
+            showCartToast(response.Message, 'success');
+            // Update cart badge in navbar if exists
+            updateCartBadge(response.CartCount);
+        } else {
+            showCartToast(response.Message, 'danger');
+        }
+    }
+    
+    function onAddToCartError() {
+        showCartToast('Có lỗi xảy ra. Vui lòng thử lại.', 'danger');
+    }
+    
+    function showCartToast(message, type) {
+        var toastHtml = '<div class="toast align-items-center text-white bg-' + type + ' border-0 position-fixed bottom-0 end-0 m-3" role="alert">' +
+            '<div class="d-flex">' +
+            '<div class="toast-body">' + message + '</div>' +
+            '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>' +
+            '</div></div>';
+        var $toast = $(toastHtml).appendTo('body');
+        var toast = new bootstrap.Toast($toast[0], { delay: 3000 });
+        toast.show();
+        $toast.on('hidden.bs.toast', function () { $(this).remove(); });
+    }
+    
+    function updateCartBadge(count) {
+        var $badge = $('.navbar .bi-cart3').parent().find('.badge');
+        if ($badge.length === 0 && count > 0) {
+            // Create badge if doesn't exist
+            $('.navbar .bi-cart3').parent().addClass('position-relative');
+            $badge = $('<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;"></span>');
+            $('.navbar .bi-cart3').after($badge);
+        }
+        if (count > 0) {
+            $badge.text(count);
+        } else {
+            $badge.remove();
+        }
+    }
+</script>

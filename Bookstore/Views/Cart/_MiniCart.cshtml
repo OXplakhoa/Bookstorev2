@@ -1,0 +1,12 @@
+@model Bookstore.ViewModels.MiniCartViewModel
+
+<a href="@Url.Action("Index", "Cart")" class="nav-link position-relative">
+    <i class="bi bi-cart3"></i>
+    @if (Model.ItemCount > 0)
+    {
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+            @Model.ItemCount
+            <span class="visually-hidden">sản phẩm trong giỏ hàng</span>
+        </span>
+    }
+</a>
