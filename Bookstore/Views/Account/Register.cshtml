@@ -1,40 +1,41 @@
-@model Bookstore.ViewModels.RegisterViewModel
+﻿@model Bookstore.ViewModels.RegisterViewModel
 @{
-    ViewBag.Title = "Register";
+    ViewBag.Title = "Đăng ký";
 }
 
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6">
         <div class="card shadow mt-5">
             <div class="card-header bg-success text-white text-center">
-                <h4 class="mb-0"><i class="bi bi-person-plus"></i> Create Account</h4>
+                <h4 class="mb-0"><i class="bi bi-person-plus"></i> Tạo tài khoản</h4>
             </div>
             <div class="card-body">
-                @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "needs-validation" }))
+                @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "needs-validation", id = "registerForm" }))
                 {
                     @Html.AntiForgeryToken()
-                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             @Html.LabelFor(m => m.FullName, new { @class = "form-label" })
                             <span class="text-danger">*</span>
-                            @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "Enter your full name", autofocus = "autofocus" })
+                            @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "Nguyễn Văn A", autofocus = "autofocus", maxlength = "100" })
                             @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger small" })
                         </div>
 
                         <div class="col-md-6 mb-3">
                             @Html.LabelFor(m => m.PhoneNumber, new { @class = "form-label" })
                             <span class="text-danger">*</span>
-                            @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control", placeholder = "Enter your phone number" })
+                            @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control", placeholder = "0912345678", maxlength = "15" })
                             @Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "text-danger small" })
+                            <small class="text-muted">Định dạng: 0xxxxxxxxx hoặc +84xxxxxxxxx</small>
                         </div>
                     </div>
 
                     <div class="mb-3">
                         @Html.LabelFor(m => m.Email, new { @class = "form-label" })
                         <span class="text-danger">*</span>
-                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Enter your email address", type = "email" })
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "example@gmail.com", type = "email", maxlength = "256" })
                         @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger small" })
                     </div>
 
@@ -42,36 +43,49 @@
                         <div class="col-md-6 mb-3">
                             @Html.LabelFor(m => m.Password, new { @class = "form-label" })
                             <span class="text-danger">*</span>
-                            @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Create a password" })
+                            <div class="input-group">
+                                @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Nhập mật khẩu", id = "password" })
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="bi bi-eye" id="toggleIcon"></i>
+                                </button>
+                            </div>
                             @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger small" })
-                            <small class="text-muted">Minimum 6 characters</small>
+                            <small class="text-muted">Ít nhất 6 ký tự, gồm chữ hoa, thường, số và ký tự đặc biệt</small>
                         </div>
 
                         <div class="col-md-6 mb-3">
                             @Html.LabelFor(m => m.ConfirmPassword, new { @class = "form-label" })
                             <span class="text-danger">*</span>
-                            @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", placeholder = "Confirm your password" })
+                            @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", placeholder = "Xác nhận mật khẩu" })
                             @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-danger small" })
                         </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar" role="progressbar" id="passwordStrength" style="width: 0%"></div>
+                        </div>
+                        <small id="passwordStrengthText" class="text-muted"></small>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             @Html.LabelFor(m => m.DateOfBirth, new { @class = "form-label" })
-                            @Html.TextBoxFor(m => m.DateOfBirth, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                            @Html.TextBoxFor(m => m.DateOfBirth, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date", max = DateTime.Today.AddYears(-13).ToString("yyyy-MM-dd") })
                             @Html.ValidationMessageFor(m => m.DateOfBirth, "", new { @class = "text-danger small" })
+                            <small class="text-muted">Bạn phải ít nhất 13 tuổi</small>
                         </div>
 
                         <div class="col-md-6 mb-3">
                             @Html.LabelFor(m => m.Address, new { @class = "form-label" })
-                            @Html.TextBoxFor(m => m.Address, new { @class = "form-control", placeholder = "Enter your address" })
+                            @Html.TextBoxFor(m => m.Address, new { @class = "form-control", placeholder = "Số nhà, đường, quận/huyện, tỉnh/TP", maxlength = "500" })
                             @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger small" })
                         </div>
                     </div>
 
                     <div class="d-grid gap-2 mt-4">
                         <button type="submit" class="btn btn-success btn-lg">
-                            <i class="bi bi-person-plus-fill"></i> Create Account
+                            <i class="bi bi-person-plus-fill"></i> Đăng ký
                         </button>
                     </div>
                 }
@@ -79,8 +93,8 @@
                 <hr />
 
                 <div class="text-center">
-                    <p class="mb-0">Already have an account?</p>
-                    @Html.ActionLink("Login here", "Login", "Account", null, new { @class = "btn btn-outline-primary mt-2" })
+                    <p class="mb-0">Đã có tài khoản?</p>
+                    @Html.ActionLink("Đăng nhập tại đây", "Login", "Account", null, new { @class = "btn btn-outline-primary mt-2" })
                 </div>
             </div>
         </div>
@@ -89,4 +103,46 @@
 
 @section scripts {
     @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(document).ready(function () {
+            $('#togglePassword').click(function () {
+                var passwordField = $('#password');
+                var toggleIcon = $('#toggleIcon');
+                if (passwordField.attr('type') === 'password') {
+                    passwordField.attr('type', 'text');
+                    toggleIcon.removeClass('bi-eye').addClass('bi-eye-slash');
+                } else {
+                    passwordField.attr('type', 'password');
+                    toggleIcon.removeClass('bi-eye-slash').addClass('bi-eye');
+                }
+            });
+
+            $('#password').on('input', function () {
+                var password = $(this).val();
+                var strength = 0;
+                var strengthBar = $('#passwordStrength');
+                var strengthText = $('#passwordStrengthText');
+
+                if (password.length >= 6) strength += 20;
+                if (password.length >= 10) strength += 10;
+                if (/[a-z]/.test(password)) strength += 20;
+                if (/[A-Z]/.test(password)) strength += 20;
+                if (/[0-9]/.test(password)) strength += 15;
+                if (/[@@$!%*?&]/.test(password)) strength += 15;
+
+                strengthBar.css('width', strength + '%');
+
+                if (strength < 40) {
+                    strengthBar.removeClass('bg-warning bg-success').addClass('bg-danger');
+                    strengthText.text('Yếu').removeClass('text-warning text-success').addClass('text-danger');
+                } else if (strength < 70) {
+                    strengthBar.removeClass('bg-danger bg-success').addClass('bg-warning');
+                    strengthText.text('Trung bình').removeClass('text-danger text-success').addClass('text-warning');
+                } else {
+                    strengthBar.removeClass('bg-danger bg-warning').addClass('bg-success');
+                    strengthText.text('Mạnh').removeClass('text-danger text-warning').addClass('text-success');
+                }
+            });
+        });
+    </script>
 }

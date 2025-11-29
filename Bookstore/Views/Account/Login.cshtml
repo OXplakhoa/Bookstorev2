@@ -1,13 +1,13 @@
-@model Bookstore.ViewModels.LoginViewModel
+﻿@model Bookstore.ViewModels.LoginViewModel
 @{
-    ViewBag.Title = "Login";
+    ViewBag.Title = "Đăng nhập";
 }
 
 <div class="row justify-content-center">
     <div class="col-md-6 col-lg-4">
         <div class="card shadow mt-5">
             <div class="card-header bg-primary text-white text-center">
-                <h4 class="mb-0"><i class="bi bi-person-circle"></i> Login</h4>
+                <h4 class="mb-0"><i class="bi bi-person-circle"></i> Đăng nhập</h4>
             </div>
             <div class="card-body">
                 @if (TempData["SuccessMessage"] != null)
@@ -25,13 +25,13 @@
 
                     <div class="mb-3">
                         @Html.LabelFor(m => m.Email, new { @class = "form-label" })
-                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Enter your email", autofocus = "autofocus" })
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Nhập email của bạn", autofocus = "autofocus" })
                         @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger small" })
                     </div>
 
                     <div class="mb-3">
                         @Html.LabelFor(m => m.Password, new { @class = "form-label" })
-                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Enter your password" })
+                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Nhập mật khẩu" })
                         @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger small" })
                     </div>
 
@@ -42,7 +42,7 @@
 
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-box-arrow-in-right"></i> Login
+                            <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
                         </button>
                     </div>
                 }
@@ -50,8 +50,8 @@
                 <hr />
 
                 <div class="text-center">
-                    <p class="mb-0">Don't have an account?</p>
-                    @Html.ActionLink("Register here", "Register", "Account", null, new { @class = "btn btn-outline-secondary mt-2" })
+                    <p class="mb-0">Chưa có tài khoản?</p>
+                    @Html.ActionLink("Đăng ký tại đây", "Register", "Account", null, new { @class = "btn btn-outline-secondary mt-2" })
                 </div>
             </div>
         </div>

@@ -1,5 +1,5 @@
-@{
-    ViewBag.Title = "Access Denied";
+﻿@{
+    ViewBag.Title = "Truy cập bị từ chối";
 }
 
 <div class="row justify-content-center">
@@ -7,12 +7,12 @@
         <div class="card shadow">
             <div class="card-body py-5">
                 <i class="bi bi-shield-exclamation text-danger" style="font-size: 5rem;"></i>
-                <h2 class="mt-3">Access Denied</h2>
-                <p class="lead text-muted">You don't have permission to access this resource.</p>
+                <h2 class="mt-3">Truy cập bị từ chối</h2>
+                <p class="lead text-muted">Bạn không có quyền truy cập tài nguyên này.</p>
                 <hr />
                 <div class="d-flex justify-content-center gap-3">
-                    @Html.ActionLink("Go Home", "Index", "Home", null, new { @class = "btn btn-primary" })
-                    @Html.ActionLink("Login", "Login", "Account", null, new { @class = "btn btn-outline-secondary" })
+                    @Html.ActionLink("Trang chủ", "Index", "Home", null, new { @class = "btn btn-primary" })
+                    @Html.ActionLink("Đăng nhập", "Login", "Account", null, new { @class = "btn btn-outline-secondary" })
                 </div>
             </div>
         </div>

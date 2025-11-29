@@ -48,21 +48,21 @@ namespace Bookstore.Controllers
 
             if (user == null)
             {
-                ModelState.AddModelError("", "Invalid email or password.");
+                ModelState.AddModelError("", "Email hoặc mật khẩu không đúng.");
                 return View(model);
             }
 
             // Check if user is active
             if (!user.IsActive)
             {
-                ModelState.AddModelError("", "Your account has been deactivated. Please contact support.");
+                ModelState.AddModelError("", "Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ Admin hỗ trợ.");
                 return View(model);
             }
 
             // Check if user is locked out
             if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow)
             {
-                ModelState.AddModelError("", "Your account is locked. Please try again later.");
+                ModelState.AddModelError("", "Tài khoản của bạn đã bị khóa. Vui lòng thử lại sau.");
                 return View(model);
             }
 
@@ -80,7 +80,7 @@ namespace Bookstore.Controllers
                 }
                 db.SaveChanges();
 
-                ModelState.AddModelError("", "Invalid email or password.");
+                ModelState.AddModelError("", "Email hoặc mật khẩu không đúng.");
                 return View(model);
             }
 
@@ -147,10 +147,64 @@ namespace Bookstore.Controllers
                 return View(model);
             }
 
-            // Check if email already exists
-            if (db.AspNetUsers.Any(u => u.Email == model.Email))
+            // Trim and normalize input
+            model.Email = model.Email?.Trim().ToLower();
+            model.FullName = model.FullName?.Trim();
+            model.PhoneNumber = model.PhoneNumber?.Trim();
+            model.Address = model.Address?.Trim();
+
+            // Additional server-side validation
+
+            // Check for disposable/temporary email domains
+            var blockedDomains = new[] { "tempmail.com", "throwaway.com", "mailinator.com", "guerrillamail.com", "10minutemail.com" };
+            var emailDomain = model.Email?.Split('@').LastOrDefault()?.ToLower();
+            if (blockedDomains.Contains(emailDomain))
             {
-                ModelState.AddModelError("Email", "This email is already registered.");
+                ModelState.AddModelError("Email", "Không chấp nhận email tạm thời. Vui lòng sử dụng email chính thức.");
+                return View(model);
+            }
+
+            // Check if email already exists
+            if (db.AspNetUsers.Any(u => u.Email.ToLower() == model.Email || u.NormalizedEmail == model.Email.ToUpper()))
+            {
+                ModelState.AddModelError("Email", "Email này đã được đăng ký.");
+                return View(model);
+            }
+
+            // Check if phone number already exists
+            if (db.AspNetUsers.Any(u => u.PhoneNumber == model.PhoneNumber))
+            {
+                ModelState.AddModelError("PhoneNumber", "Số điện thoại này đã được sử dụng.");
+                return View(model);
+            }
+
+            // Validate date of birth (must be at least 13 years old, not more than 120 years)
+            if (model.DateOfBirth.HasValue)
+            {
+                var age = DateTime.Today.Year - model.DateOfBirth.Value.Year;
+                if (model.DateOfBirth.Value.Date > DateTime.Today.AddYears(-age)) age--;
+
+                if (age < 13)
+                {
+                    ModelState.AddModelError("DateOfBirth", "Bạn phải ít nhất 13 tuổi để đăng ký.");
+                    return View(model);
+                }
+                if (age > 120)
+                {
+                    ModelState.AddModelError("DateOfBirth", "Ngày sinh không hợp lệ.");
+                    return View(model);
+                }
+                if (model.DateOfBirth.Value > DateTime.Today)
+                {
+                    ModelState.AddModelError("DateOfBirth", "Ngày sinh không thể là ngày trong tương lai.");
+                    return View(model);
+                }
+            }
+
+            // Validate full name doesn't contain numbers or special chars (except allowed ones)
+            if (!string.IsNullOrEmpty(model.FullName) && System.Text.RegularExpressions.Regex.IsMatch(model.FullName, @"\d"))
+            {
+                ModelState.AddModelError("FullName", "Họ tên không được chứa số.");
                 return View(model);
             }
 
@@ -195,7 +249,7 @@ namespace Bookstore.Controllers
             db.AspNetUsers.Add(user);
             db.SaveChanges();
 
-            TempData["SuccessMessage"] = "Registration successful! Please log in.";
+            TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập lại.";
             return RedirectToAction("Login");
         }
 
@@ -282,7 +336,7 @@ namespace Bookstore.Controllers
 
             db.SaveChanges();
 
-            TempData["SuccessMessage"] = "Profile updated successfully!";
+            TempData["SuccessMessage"] = "Cập nhật hồ sơ thành công!";
             return RedirectToAction("Profile");
         }
 
@@ -318,7 +372,7 @@ namespace Bookstore.Controllers
 
             if (result == PasswordVerificationResult.Failed)
             {
-                ModelState.AddModelError("CurrentPassword", "Current password is incorrect.");
+                ModelState.AddModelError("CurrentPassword", "Mật khẩu hiện tại không đúng.");
                 return View(model);
             }
 
@@ -329,7 +383,7 @@ namespace Bookstore.Controllers
 
             db.SaveChanges();
 
-            TempData["SuccessMessage"] = "Password changed successfully!";
+            TempData["SuccessMessage"] = "Đổi mật khẩu thành công!";
             return RedirectToAction("Profile");
         }
 
@@ -369,7 +423,7 @@ namespace Bookstore.Controllers
             var adminRole = db.AspNetRoles.FirstOrDefault(r => r.Name == "Admin");
             if (adminRole == null)
             {
-                return Content("Error: Admin role not found in database. Please create the Admin role first.");
+                return Content("Lỗi: Vai trò Admin không được tìm thấy trong cơ sở dữ liệu. Vui lòng tạo vai trò Admin trước.");
             }
 
             var newAdmin = new AspNetUsers
@@ -401,7 +455,7 @@ namespace Bookstore.Controllers
             db.AspNetUsers.Add(newAdmin);
             db.SaveChanges();
 
-            return Content("Admin created successfully!\n\nEmail: admin@bookstore.local\nPassword: Admin@123\n\n⚠️ DELETE THIS ACTION IN PRODUCTION!");
+            return Content("Tạo admin thành công!\n\nEmail: admin@bookstore.local\nMật khẩu: Admin@123\n\n⚠️ XÓA HÀNH ĐỘNG NÀY TRONG PRODUCTION!");
         }
 
         protected override void Dispose(bool disposing)
