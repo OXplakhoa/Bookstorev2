@@ -3,23 +3,62 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - My ASP.NET Application</title>
+    <title>@ViewBag.Title - Bookstore</title>
     @Styles.Render("~/Content/css")
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     @Scripts.Render("~/bundles/modernizr")
 </head>
 <body>
     <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
         <div class="container">
-            @Html.ActionLink("Application name", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+            @Html.ActionLink("Bookstore", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
             <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Toggle navigation" aria-controls="navbarSupportedContent"
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
                 <ul class="navbar-nav flex-grow-1">
-                    <li>@Html.ActionLink("Home", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("About", "About", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Contact", "Contact", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li class="nav-item">@Html.ActionLink("Home", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li class="nav-item">@Html.ActionLink("Products", "Index", "Products", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li class="nav-item">@Html.ActionLink("About", "About", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li class="nav-item">@Html.ActionLink("Contact", "Contact", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+                </ul>
+                <ul class="navbar-nav">
+                    @if (Request.IsAuthenticated)
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i> @User.Identity.Name
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
+                                <li>@Html.ActionLink("My Profile", "Profile", "Account", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("My Orders", "Index", "Orders", null, new { @class = "dropdown-item" })</li>
+                                <li><hr class="dropdown-divider" /></li>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <li>@Html.ActionLink("Admin Dashboard", "Index", "Admin", null, new { @class = "dropdown-item" })</li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                }
+                                <li>
+                                    @using (Html.BeginForm("Logout", "Account", FormMethod.Post, new { @class = "d-inline" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="bi bi-box-arrow-right"></i> Logout
+                                        </button>
+                                    }
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            @Html.ActionLink("Cart", "Index", "Cart", null, new { @class = "nav-link" })
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">@Html.ActionLink("Login", "Login", "Account", null, new { @class = "nav-link" })</li>
+                        <li class="nav-item">@Html.ActionLink("Register", "Register", "Account", null, new { @class = "nav-link" })</li>
+                    }
                 </ul>
             </div>
         </div>
@@ -28,7 +67,7 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
+            <p>&copy; @DateTime.Now.Year - Bookstore</p>
         </footer>
     </div>
 

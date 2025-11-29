@@ -1,0 +1,140 @@
+@model Bookstore.ViewModels.ProfileViewModel
+@{
+    ViewBag.Title = "My Profile";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Profile Sidebar -->
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
+                    {
+                        <img src="@Model.ProfilePictureUrl" alt="Profile Picture" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <div class="bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 150px; height: 150px; font-size: 4rem;">
+                            @(string.IsNullOrEmpty(Model.FullName) ? "U" : Model.FullName.Substring(0, 1).ToUpper())
+                        </div>
+                    }
+                    <h4>@Model.FullName</h4>
+                    <p class="text-muted">@Model.Email</p>
+                    <span class="badge bg-primary fs-6">@Model.Role</span>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-box-seam"></i> Orders</span>
+                        <span class="badge bg-info rounded-pill">@Model.TotalOrders</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-star"></i> Reviews</span>
+                        <span class="badge bg-warning rounded-pill">@Model.TotalReviews</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-calendar"></i> Member Since</span>
+                        <span class="text-muted">@Model.CreatedAt.ToString("MMM yyyy")</span>
+                    </li>
+                </ul>
+                <div class="card-footer">
+                    @Html.ActionLink("Change Password", "ChangePassword", "Account", null, new { @class = "btn btn-outline-secondary w-100" })
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Edit Form -->
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Edit Profile</h5>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @using (Html.BeginForm("Profile", "Account", FormMethod.Post, new { @class = "needs-validation" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(m => m.Id)
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                @Html.LabelFor(m => m.Email, new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.Email, new { @class = "form-control", @readonly = "readonly", disabled = "disabled" })
+                                <small class="text-muted">Email cannot be changed</small>
+                            </div>
+                            <div class="col-md-6">
+                                @Html.LabelFor(m => m.FullName, new { @class = "form-label" })
+                                <span class="text-danger">*</span>
+                                @Html.TextBoxFor(m => m.FullName, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger small" })
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                @Html.LabelFor(m => m.PhoneNumber, new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "text-danger small" })
+                            </div>
+                            <div class="col-md-6">
+                                @Html.LabelFor(m => m.DateOfBirth, new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.DateOfBirth, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                                @Html.ValidationMessageFor(m => m.DateOfBirth, "", new { @class = "text-danger small" })
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            @Html.LabelFor(m => m.Address, new { @class = "form-label" })
+                            @Html.TextAreaFor(m => m.Address, new { @class = "form-control", rows = 3 })
+                            @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger small" })
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> Save Changes
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="card shadow mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-link-45deg"></i> Quick Links</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <a href="@Url.Action("Index", "Orders")" class="btn btn-outline-primary w-100 mb-2">
+                                <i class="bi bi-box-seam"></i> My Orders
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="@Url.Action("Index", "Cart")" class="btn btn-outline-success w-100 mb-2">
+                                <i class="bi bi-cart"></i> My Cart
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="@Url.Action("Index", "Home")" class="btn btn-outline-info w-100 mb-2">
+                                <i class="bi bi-shop"></i> Continue Shopping
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
