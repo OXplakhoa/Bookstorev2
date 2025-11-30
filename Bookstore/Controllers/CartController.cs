@@ -368,22 +368,6 @@ namespace Bookstore.Controllers
             }, JsonRequestBehavior.AllowGet);
         }
 
-        // GET: Cart/AddToCartForm/{id}
-        /// <summary>
-        /// Show add to cart form (for product detail page)
-        /// </summary>
-        public ActionResult AddToCartForm(int id)
-        {
-            var product = db.Products.Find(id);
-            if (product == null || !product.IsActive)
-            {
-                return HttpNotFound();
-            }
-
-            ViewBag.Product = product;
-            return PartialView("_AddToCartForm", new AddToCartViewModel { ProductId = id, Quantity = 1 });
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
