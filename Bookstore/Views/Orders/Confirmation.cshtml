@@ -1,0 +1,142 @@
+﻿@model Bookstore.ViewModels.OrderDetailsViewModel
+@{
+    ViewBag.Title = "Đặt hàng thành công";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Success Message -->
+            <div class="text-center mb-5">
+                <div class="mb-4">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                </div>
+                <h2 class="text-success mb-3">Đặt hàng thành công!</h2>
+                <p class="lead text-muted">
+                    Cảm ơn bạn đã đặt hàng. Mã đơn hàng của bạn là: 
+                    <strong class="text-primary">@Model.Order.OrderNumber</strong>
+                </p>
+                <p class="text-muted">
+                    Chúng tôi đã gửi email xác nhận đến <strong>@Model.Order.ShippingEmail</strong>
+                </p>
+            </div>
+
+            <!-- Order Summary Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-receipt me-2"></i>Thông tin đơn hàng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="text-muted small">Mã đơn hàng</label>
+                            <p class="mb-0 fw-bold">@Model.Order.OrderNumber</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small">Ngày đặt</label>
+                            <p class="mb-0 fw-bold">@Model.Order.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small">Phương thức thanh toán</label>
+                            <p class="mb-0 fw-bold">@Model.Order.PaymentMethodDisplayText</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small">Trạng thái thanh toán</label>
+                            <p class="mb-0">
+                                <span class="badge @(Model.Order.PaymentStatus == "COD" ? "bg-info" : Model.Order.PaymentStatus == "Paid" ? "bg-success" : "bg-warning text-dark")">
+                                    @Model.Order.PaymentStatusDisplayText
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="mb-3"><i class="bi bi-geo-alt me-2"></i>Địa chỉ giao hàng</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="text-muted small">Người nhận</label>
+                            <p class="mb-0 fw-bold">@Model.Order.ShippingName</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small">Số điện thoại</label>
+                            <p class="mb-0 fw-bold">@Model.Order.ShippingPhone</p>
+                        </div>
+                        <div class="col-12">
+                            <label class="text-muted small">Địa chỉ</label>
+                            <p class="mb-0 fw-bold">@Model.Order.ShippingAddress</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="mb-3"><i class="bi bi-box-seam me-2"></i>Sản phẩm đã đặt</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Sản phẩm</th>
+                                    <th class="text-center">Số lượng</th>
+                                    <th class="text-end">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="@item.ProductImageUrl" alt="@item.ProductTitle" 
+                                                     class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                                <div>
+                                                    <strong>@item.ProductTitle</strong>
+                                                    <br><small class="text-muted">@string.Format("{0:N0}₫", item.UnitPrice)</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center align-middle">@item.Quantity</td>
+                                        <td class="text-end align-middle">@string.Format("{0:N0}₫", item.Subtotal)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="2" class="text-end"><strong>Tổng cộng:</strong></td>
+                                    <td class="text-end"><strong class="text-primary fs-5">@string.Format("{0:N0}₫", Model.Order.Total)</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Next Steps -->
+            @if (Model.Order.PaymentMethod == "COD")
+            {
+                <div class="alert alert-info">
+                    <h6><i class="bi bi-info-circle me-2"></i>Bước tiếp theo</h6>
+                    <p class="mb-0">
+                        Đơn hàng của bạn sẽ được xử lý và giao trong vòng 3-5 ngày làm việc.
+                        Vui lòng chuẩn bị <strong>@string.Format("{0:N0}₫", Model.Order.Total)</strong> 
+                        thanh toán khi nhận hàng.
+                    </p>
+                </div>
+            }
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <a href="@Url.Action("Details", new { id = Model.Order.OrderId })" class="btn btn-primary">
+                    <i class="bi bi-eye me-1"></i>Xem chi tiết đơn hàng
+                </a>
+                <a href="@Url.Action("Index")" class="btn btn-outline-primary">
+                    <i class="bi bi-bag me-1"></i>Xem tất cả đơn hàng
+                </a>
+                <a href="@Url.Action("Index", "Products")" class="btn btn-outline-secondary">
+                    <i class="bi bi-shop me-1"></i>Tiếp tục mua sắm
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

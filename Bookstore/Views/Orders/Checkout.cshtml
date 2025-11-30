@@ -1,0 +1,257 @@
+﻿@model Bookstore.ViewModels.PlaceOrderViewModel
+@{
+    ViewBag.Title = "Thanh toán";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Cart")">Giỏ hàng</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Thanh toán</li>
+                </ol>
+            </nav>
+
+            <h2 class="mb-4">
+                <i class="bi bi-credit-card me-2"></i>Thanh toán
+            </h2>
+
+            <form id="checkoutForm">
+                @Html.AntiForgeryToken()
+                <div class="row g-4">
+                    <!-- Left Column: Shipping & Payment -->
+                    <div class="col-lg-7">
+                        <!-- Shipping Information -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-geo-alt me-2"></i>Thông tin giao hàng
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="ShippingName" class="form-label">Tên người nhận <span class="text-danger">*</span></label>
+                                        @Html.TextBoxFor(m => m.ShippingName, new { @class = "form-control", placeholder = "Nhập tên người nhận" })
+                                        @Html.ValidationMessageFor(m => m.ShippingName, "", new { @class = "text-danger small" })
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="ShippingPhone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                                        @Html.TextBoxFor(m => m.ShippingPhone, new { @class = "form-control", placeholder = "Nhập số điện thoại" })
+                                        @Html.ValidationMessageFor(m => m.ShippingPhone, "", new { @class = "text-danger small" })
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="ShippingEmail" class="form-label">Email <span class="text-danger">*</span></label>
+                                        @Html.TextBoxFor(m => m.ShippingEmail, new { @class = "form-control", type = "email", placeholder = "Nhập email" })
+                                        @Html.ValidationMessageFor(m => m.ShippingEmail, "", new { @class = "text-danger small" })
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="ShippingAddress" class="form-label">Địa chỉ giao hàng <span class="text-danger">*</span></label>
+                                        @Html.TextAreaFor(m => m.ShippingAddress, new { @class = "form-control", rows = 2, placeholder = "Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố" })
+                                        @Html.ValidationMessageFor(m => m.ShippingAddress, "", new { @class = "text-danger small" })
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="Notes" class="form-label">Ghi chú</label>
+                                        @Html.TextAreaFor(m => m.Notes, new { @class = "form-control", rows = 2, placeholder = "Ghi chú về đơn hàng, ví dụ: thời gian giao hàng..." })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-wallet2 me-2"></i>Phương thức thanh toán
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="form-check payment-option p-3 border rounded mb-2">
+                                            <input class="form-check-input" type="radio" name="PaymentMethod" 
+                                                   id="paymentCOD" value="COD" checked>
+                                            <label class="form-check-label w-100" for="paymentCOD">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-cash-coin fs-4 me-3 text-success"></i>
+                                                    <div>
+                                                        <strong>Thanh toán khi nhận hàng (COD)</strong>
+                                                        <p class="text-muted mb-0 small">Thanh toán bằng tiền mặt khi nhận hàng</p>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-check payment-option p-3 border rounded">
+                                            <input class="form-check-input" type="radio" name="PaymentMethod" 
+                                                   id="paymentStripe" value="Stripe">
+                                            <label class="form-check-label w-100" for="paymentStripe">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-credit-card fs-4 me-3 text-primary"></i>
+                                                    <div>
+                                                        <strong>Thẻ tín dụng / Ghi nợ (Stripe)</strong>
+                                                        <p class="text-muted mb-0 small">Visa, Mastercard, American Express...</p>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(m => m.PaymentMethod, "", new { @class = "text-danger small" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Order Summary -->
+                    <div class="col-lg-5">
+                        <div class="card sticky-top" style="top: 20px;">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-bag-check me-2"></i>Đơn hàng (@Model.Cart.TotalQuantity sản phẩm)
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Cart Items Preview -->
+                                <div class="cart-items-preview mb-3" style="max-height: 300px; overflow-y: auto;">
+                                    @foreach (var item in Model.Cart.Items)
+                                    {
+                                        <div class="d-flex align-items-center mb-2 pb-2 border-bottom">
+                                            <img src="@item.ImageUrl" alt="@item.ProductTitle" 
+                                                 class="rounded me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                                            <div class="flex-grow-1">
+                                                <div class="small fw-bold text-truncate" style="max-width: 200px;">
+                                                    @item.ProductTitle
+                                                </div>
+                                                <div class="small text-muted">
+                                                    @string.Format("{0:N0}₫", item.UnitPrice) x @item.Quantity
+                                                </div>
+                                            </div>
+                                            <div class="text-end">
+                                                <strong>@string.Format("{0:N0}₫", item.Subtotal)</strong>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Order Totals -->
+                                <dl class="row mb-0">
+                                    <dt class="col-7 text-muted">Tạm tính</dt>
+                                    <dd class="col-5 text-end">@string.Format("{0:N0}₫", Model.Cart.Subtotal)</dd>
+
+                                    <dt class="col-7 text-muted">Phí vận chuyển</dt>
+                                    <dd class="col-5 text-end">
+                                        @if (Model.Cart.ShippingFee == 0)
+                                        {
+                                            <span class="text-success">Miễn phí</span>
+                                        }
+                                        else
+                                        {
+                                            @:@string.Format("{0:N0}₫", Model.Cart.ShippingFee)
+                                        }
+                                    </dd>
+
+                                    <dt class="col-7 text-muted">Thuế VAT (10%)</dt>
+                                    <dd class="col-5 text-end">@string.Format("{0:N0}₫", Model.Cart.Tax)</dd>
+
+                                    <hr class="my-2">
+
+                                    <dt class="col-7"><strong>Tổng cộng</strong></dt>
+                                    <dd class="col-5 text-end">
+                                        <strong class="text-primary fs-5">@string.Format("{0:N0}₫", Model.Cart.Total)</strong>
+                                    </dd>
+                                </dl>
+
+                                @if (Model.Cart.ShippingFee == 0)
+                                {
+                                    <div class="alert alert-success small py-2 mb-0 mt-2">
+                                        <i class="bi bi-truck me-1"></i>Bạn được miễn phí vận chuyển cho đơn hàng trên 500.000₫
+                                    </div>
+                                }
+                            </div>
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-primary btn-lg w-100" id="btnPlaceOrder">
+                                    <i class="bi bi-check-circle me-2"></i>Đặt hàng
+                                </button>
+                                <a href="@Url.Action("Index", "Cart")" class="btn btn-link w-100 mt-2">
+                                    <i class="bi bi-arrow-left me-1"></i>Quay lại giỏ hàng
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .payment-option {
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .payment-option:hover {
+            border-color: #0d6efd !important;
+            background-color: #f8f9fa;
+        }
+        .payment-option:has(input:checked) {
+            border-color: #0d6efd !important;
+            background-color: #e7f1ff;
+        }
+    </style>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(document).ready(function() {
+            $('#checkoutForm').submit(function(e) {
+                e.preventDefault();
+
+                var $form = $(this);
+                var $btn = $('#btnPlaceOrder');
+
+                // Client-side validation
+                if (!$form.valid()) {
+                    return;
+                }
+
+                // Disable button and show loading
+                $btn.prop('disabled', true)
+                    .html('<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...');
+
+                $.ajax({
+                    url: '@Url.Action("PlaceOrder")',
+                    type: 'POST',
+                    data: $form.serialize(),
+                    success: function(response) {
+                        if (response.Success) {
+                            var paymentMethod = $('input[name="PaymentMethod"]:checked').val();
+                            
+                            if (paymentMethod === 'Stripe') {
+                                // Redirect to Stripe payment page (to be implemented)
+                                window.location.href = '@Url.Action("Pay", "Checkout")' + '?orderId=' + response.OrderId;
+                            } else {
+                                // COD - redirect to confirmation page
+                                window.location.href = '@Url.Action("Confirmation")' + '/' + response.OrderId;
+                            }
+                        } else {
+                            alert(response.Message);
+                            $btn.prop('disabled', false)
+                                .html('<i class="bi bi-check-circle me-2"></i>Đặt hàng');
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                        $btn.prop('disabled', false)
+                            .html('<i class="bi bi-check-circle me-2"></i>Đặt hàng');
+                    }
+                });
+            });
+        });
+    </script>
+}

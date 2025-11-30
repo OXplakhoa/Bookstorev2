@@ -145,7 +145,7 @@
                                 }
                                 else
                                 {
-                                    string.Format("{0:N0}₫", Model.ShippingFee);
+                                    @:@string.Format("{0:N0}₫", Model.ShippingFee)
                                 }
                             </span>
                         </div>
@@ -165,7 +165,7 @@
                             <strong>Tổng thanh toán:</strong>
                             <strong class="text-primary fs-5" id="total">@string.Format("{0:N0}₫", Model.Total)</strong>
                         </div>
-                        @Html.ActionLink("Tiến hành thanh toán", "Index", "Checkout", null, new { @class = "btn btn-primary w-100 btn-lg" })
+                        @Html.ActionLink("Tiến hành thanh toán", "Index", "Orders/Checkout", null, new { @class = "btn btn-primary w-100 btn-lg" })
                     </div>
                 </div>
 

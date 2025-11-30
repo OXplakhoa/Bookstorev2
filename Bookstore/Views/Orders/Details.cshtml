@@ -1,0 +1,329 @@
+﻿@model Bookstore.ViewModels.OrderDetailsViewModel
+@{
+    ViewBag.Title = "Chi tiết đơn hàng #" + Model.Order.OrderNumber;
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index")">Đơn hàng</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@Model.Order.OrderNumber</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="bi bi-receipt me-2"></i>Đơn hàng #@Model.Order.OrderNumber
+                </h2>
+                <span class="@Model.Order.StatusBadgeClass fs-5">@Model.Order.StatusDisplayText</span>
+            </div>
+
+            <div class="row g-4">
+                <!-- Left Column: Order Info & Items -->
+                <div class="col-lg-8">
+                    <!-- Order Items -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-box-seam me-2"></i>Sản phẩm (@Model.Items.Count)
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 80px;">Ảnh</th>
+                                            <th>Sản phẩm</th>
+                                            <th class="text-center">Số lượng</th>
+                                            <th class="text-end">Đơn giá</th>
+                                            <th class="text-end">Thành tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.Items)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <img src="@item.ProductImageUrl" alt="@item.ProductTitle" 
+                                                         class="rounded" style="width: 60px; height: 60px; object-fit: cover;">
+                                                </td>
+                                                <td>
+                                                    <a href="@Url.Action("Details", "Products", new { id = item.ProductId })" 
+                                                       class="text-decoration-none">
+                                                        <strong>@item.ProductTitle</strong>
+                                                    </a>
+                                                    @if (!string.IsNullOrEmpty(item.ProductAuthor))
+                                                    {
+                                                        <br><small class="text-muted">@item.ProductAuthor</small>
+                                                    }
+                                                </td>
+                                                <td class="text-center">@item.Quantity</td>
+                                                <td class="text-end">@string.Format("{0:N0}₫", item.UnitPrice)</td>
+                                                <td class="text-end"><strong>@string.Format("{0:N0}₫", item.Subtotal)</strong></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        @{
+                                            var subtotal = Model.Items.Sum(i => i.Subtotal);
+                                            var shippingFee = subtotal >= 500000 ? 0 : 30000m;
+                                            var tax = subtotal * 0.1m;
+                                        }
+                                        <tr>
+                                            <td colspan="4" class="text-end">Tạm tính:</td>
+                                            <td class="text-end">@string.Format("{0:N0}₫", subtotal)</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4" class="text-end">Phí vận chuyển:</td>
+                                            <td class="text-end">
+                                                @if (shippingFee == 0)
+                                                {
+                                                    <span class="text-success">Miễn phí</span>
+                                                }
+                                                else
+                                                {
+                                                    @:@string.Format("{0:N0}₫", shippingFee)
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4" class="text-end">Thuế VAT (10%):</td>
+                                            <td class="text-end">@string.Format("{0:N0}₫", tax)</td>
+                                        </tr>
+                                        <tr class="table-primary">
+                                            <td colspan="4" class="text-end"><strong>Tổng cộng:</strong></td>
+                                            <td class="text-end">
+                                                <strong class="text-primary fs-5">@string.Format("{0:N0}₫", Model.Order.Total)</strong>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shipping Info -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-geo-alt me-2"></i>Thông tin giao hàng
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="text-muted small">Người nhận</label>
+                                    <p class="mb-0"><strong>@Model.Order.ShippingName</strong></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="text-muted small">Số điện thoại</label>
+                                    <p class="mb-0"><strong>@Model.Order.ShippingPhone</strong></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="text-muted small">Email</label>
+                                    <p class="mb-0"><strong>@Model.Order.ShippingEmail</strong></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="text-muted small">Địa chỉ</label>
+                                    <p class="mb-0"><strong>@Model.Order.ShippingAddress</strong></p>
+                                </div>
+                                @if (!string.IsNullOrEmpty(Model.Order.TrackingNumber))
+                                {
+                                    <div class="col-12">
+                                        <label class="text-muted small">Mã vận đơn</label>
+                                        <p class="mb-0">
+                                            <span class="badge bg-info fs-6">@Model.Order.TrackingNumber</span>
+                                        </p>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.Order.Notes))
+                                {
+                                    <div class="col-12">
+                                        <label class="text-muted small">Ghi chú</label>
+                                        <p class="mb-0">@Model.Order.Notes</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment History -->
+                    @if (Model.Payments.Any())
+                    {
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-credit-card me-2"></i>Lịch sử thanh toán
+                                </h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Thời gian</th>
+                                                <th>Phương thức</th>
+                                                <th>Số tiền</th>
+                                                <th>Mã giao dịch</th>
+                                                <th>Trạng thái</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var payment in Model.Payments)
+                                            {
+                                                <tr>
+                                                    <td>@payment.PaymentDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                                    <td>@payment.PaymentMethod</td>
+                                                    <td>@string.Format("{0:N0}₫", payment.Amount)</td>
+                                                    <td>
+                                                        @if (!string.IsNullOrEmpty(payment.TransactionId))
+                                                        {
+                                                            <code>@payment.TransactionId</code>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">-</span>
+                                                        }
+                                                    </td>
+                                                    <td><span class="@payment.StatusBadgeClass">@payment.Status</span></td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Right Column: Order Summary -->
+                <div class="col-lg-4">
+                    <div class="card sticky-top" style="top: 20px;">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-info-circle me-2"></i>Thông tin đơn hàng
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row mb-0">
+                                <dt class="col-6 text-muted">Mã đơn hàng</dt>
+                                <dd class="col-6 text-end">@Model.Order.OrderNumber</dd>
+
+                                <dt class="col-6 text-muted">Ngày đặt</dt>
+                                <dd class="col-6 text-end">@Model.Order.OrderDate.ToString("dd/MM/yyyy")</dd>
+
+                                <dt class="col-6 text-muted">Giờ đặt</dt>
+                                <dd class="col-6 text-end">@Model.Order.OrderDate.ToString("HH:mm")</dd>
+
+                                <dt class="col-6 text-muted">Trạng thái</dt>
+                                <dd class="col-6 text-end">
+                                    <span class="@Model.Order.StatusBadgeClass">@Model.Order.StatusDisplayText</span>
+                                </dd>
+
+                                <dt class="col-6 text-muted">Thanh toán</dt>
+                                <dd class="col-6 text-end">@Model.Order.PaymentMethodDisplayText</dd>
+
+                                <dt class="col-6 text-muted">TT thanh toán</dt>
+                                <dd class="col-6 text-end">@Model.Order.PaymentStatusDisplayText</dd>
+
+                                <hr class="my-2">
+
+                                <dt class="col-6"><strong>Tổng tiền</strong></dt>
+                                <dd class="col-6 text-end">
+                                    <strong class="text-primary fs-5">@string.Format("{0:N0}₫", Model.Order.Total)</strong>
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-grid gap-2">
+                                @if (Model.Order.CanBeCancelled)
+                                {
+                                    <button type="button" class="btn btn-outline-danger" id="btnCancelOrder">
+                                        <i class="bi bi-x-circle me-1"></i>Hủy đơn hàng
+                                    </button>
+                                }
+                                <button type="button" class="btn btn-outline-primary" id="btnReorder">
+                                    <i class="bi bi-arrow-repeat me-1"></i>Đặt lại đơn hàng
+                                </button>
+                                <a href="@Url.Action("Index")" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left me-1"></i>Quay lại
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Cancel Order
+            $('#btnCancelOrder').click(function() {
+                if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
+                    var $btn = $(this);
+                    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Đang xử lý...');
+
+                    $.ajax({
+                        url: '@Url.Action("Cancel")',
+                        type: 'POST',
+                        data: {
+                            id: @Model.Order.OrderId,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(response) {
+                            if (response.Success) {
+                                alert(response.Message);
+                                location.reload();
+                            } else {
+                                alert(response.Message);
+                                $btn.prop('disabled', false).html('<i class="bi bi-x-circle me-1"></i>Hủy đơn hàng');
+                            }
+                        },
+                        error: function() {
+                            alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                            $btn.prop('disabled', false).html('<i class="bi bi-x-circle me-1"></i>Hủy đơn hàng');
+                        }
+                    });
+                }
+            });
+
+            // Reorder
+            $('#btnReorder').click(function() {
+                if (confirm('Thêm tất cả sản phẩm từ đơn hàng này vào giỏ hàng?')) {
+                    var $btn = $(this);
+                    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Đang thêm...');
+
+                    $.ajax({
+                        url: '@Url.Action("Reorder")',
+                        type: 'POST',
+                        data: {
+                            id: @Model.Order.OrderId,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(response) {
+                            alert(response.Message);
+                            if (response.Success) {
+                                window.location.href = '@Url.Action("Index", "Cart")';
+                            } else {
+                                $btn.prop('disabled', false).html('<i class="bi bi-arrow-repeat me-1"></i>Đặt lại đơn hàng');
+                            }
+                        },
+                        error: function() {
+                            alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                            $btn.prop('disabled', false).html('<i class="bi bi-arrow-repeat me-1"></i>Đặt lại đơn hàng');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}
+@Html.AntiForgeryToken()
